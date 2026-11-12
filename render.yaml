@@ -2,15 +2,13 @@ services:
   - type: web
     name: policypilot-api
     runtime: python
-    plan: 1c-2g
+    plan: free
     region: singapore
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
-      - key: DATA_DIR
-        value: /var/data
       - key: SEED_DEMO_ACCOUNTS
         value: "false"
       - key: SECRET_KEY
@@ -27,7 +25,3 @@ services:
         value: gemini-2.5-flash
       - key: CORS_ORIGINS
         value: http://localhost:5173,http://localhost:3000
-    disk:
-      name: policypilot-data
-      mountPath: /var/data
-      sizeGB: 1
