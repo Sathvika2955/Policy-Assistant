@@ -1,0 +1,16 @@
+ACME Corp Expense Reimbursement Policy
+
+1. Eligible Expenses
+Business travel, client meals, accommodation, and approved software subscriptions are reimbursable. Personal expenses, fines, and alcohol are not reimbursable.
+
+2. Submission Deadline
+Expense claims must be submitted within 30 days of the expense date, with original receipts attached. Claims submitted after 30 days will be rejected.
+
+3. Approval Limits
+Claims up to 5,000 INR are approved by your direct manager. Claims between 5,000 and 25,000 INR require department head approval. Claims above 25,000 INR require Finance Director approval.
+
+4. Daily Meal Allowance
+During business travel, the meal allowance is 1,500 INR per day. Amounts above this limit require written justification.
+
+5. Reimbursement Timeline
+Approved claims are paid within 10 working days via direct bank transfer.

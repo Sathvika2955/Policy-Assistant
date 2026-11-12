@@ -1,0 +1,22 @@
+[
+  {"question": "How many days of annual leave do I get each year?", "expected_source": "leave_policy.txt", "must_contain": "24 days"},
+  {"question": "Do I need a doctor's note for sick leave?", "expected_source": "leave_policy.txt", "must_contain": "medical certificate"},
+  {"question": "How long is paternity leave?", "expected_source": "leave_policy.txt", "must_contain": "Paternity leave is 2 weeks"},
+  {"question": "How early do I have to apply for annual leave?", "expected_source": "leave_policy.txt", "must_contain": "5 working days"},
+  {"question": "Can I carry forward my unused leave to next year?", "expected_source": "leave_policy.txt", "must_contain": "carried forward"},
+  {"question": "What is the deadline to submit an expense claim?", "expected_source": "expense_policy.txt", "must_contain": "30 days"},
+  {"question": "Who needs to approve a 12,000 INR expense?", "expected_source": "expense_policy.txt", "must_contain": "department head"},
+  {"question": "How much can I spend on food per day on a business trip?", "expected_source": "expense_policy.txt", "must_contain": "1,500 INR"},
+  {"question": "How soon will I get my money back after an approved claim?", "expected_source": "expense_policy.txt", "must_contain": "10 working days"},
+  {"question": "How many days a week can I work from home?", "expected_source": "remote_work_policy.txt", "must_contain": "2 days per week"},
+  {"question": "What hours must I be reachable when working remotely?", "expected_source": "remote_work_policy.txt", "must_contain": "11:00 AM"},
+  {"question": "Is a VPN required to access internal systems?", "expected_source": "remote_work_policy.txt", "must_contain": "VPN"},
+  {"question": "Which class of flight ticket am I allowed to book?", "expected_source": "travel_policy.txt", "must_contain": "economy"},
+  {"question": "What is the nightly hotel limit in a metro city?", "expected_source": "travel_policy.txt", "must_contain": "6,000 INR"},
+  {"question": "How much do I get paid per km if I drive my own car for work?", "expected_source": "travel_policy.txt", "must_contain": "12 INR per km"},
+  {"question": "How long should my password be?", "expected_source": "it_security_policy.txt", "must_contain": "12 characters"},
+  {"question": "What should I do if my laptop gets stolen?", "expected_source": "it_security_policy.txt", "must_contain": "2 hours"},
+  {"question": "Can I plug a pen drive into my work laptop?", "expected_source": "it_security_policy.txt", "must_contain": "USB"},
+  {"question": "A vendor sent me an expensive gift, what do I do?", "expected_source": "code_of_conduct.txt", "must_contain": "2,000 INR"},
+  {"question": "Where can I report harassment without giving my name?", "expected_source": "code_of_conduct.txt", "must_contain": "Ethics Hotline"}
+]

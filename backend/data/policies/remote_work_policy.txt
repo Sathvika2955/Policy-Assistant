@@ -1,0 +1,13 @@
+ACME Corp Remote Work Policy
+
+1. Eligibility
+Employees who have completed their 6-month probation may work remotely up to 2 days per week, subject to manager approval.
+
+2. Core Hours
+Remote employees must be available between 11:00 AM and 4:00 PM local time for meetings and collaboration.
+
+3. Equipment and Security
+Company laptops must be used for all work. A VPN connection is mandatory when accessing internal systems. Confidential documents must never be stored on personal devices.
+
+4. Internet Allowance
+Employees working remotely receive a monthly internet allowance of 1,000 INR, claimed through the expense process.
