@@ -144,27 +144,28 @@ Open `http://localhost:5173`. The frontend's default API URL is `http://127.0.0.
 
 On first startup, the backend creates the local SQLite tables and indexes the bundled policy files if the vector index is empty. The first embedding-model load may take a little time.
 
-## Deploy to Render and Vercel
+## Deployment status and options
 
-The repository includes `render.yaml` for the FastAPI backend. The frontend can be deployed as a Vite site on Vercel using the included `frontend/vercel.json` rewrite for React Router.
+PolicyPilot is currently a local development prototype; it is not live on a public URL. The repository includes `render.yaml` for the FastAPI backend and `frontend/vercel.json` for frontend routing on Vercel.
 
-### Backend on Render
+### Render Free demo (experimental)
 
-1. Push the project to GitHub and connect the repository to Render.
-2. Create a new Blueprint and select this repository. Render reads `render.yaml` and creates the API service with a persistent disk mounted at `/var/data`.
-3. When prompted, set a private `INITIAL_ADMIN_USERNAME` and `INITIAL_ADMIN_PASSWORD`, and optionally a `GEMINI_API_KEY`. The blueprint disables the public demo accounts and generates a JWT secret. Keep all secrets in Render, never in the repository.
-4. Wait for the service to deploy, then note its URL, for example `https://policypilot-api.onrender.com`.
+The current `render.yaml` selects Render's Free web-service plan and does not attach a persistent disk. The first deployment attempt exceeded Render Free's 512 MB memory limit while loading the local policy retrieval stack (Sentence Transformers and ChromaDB), so the service did not start successfully. Retrying without changing the backend is likely to fail again.
 
-The service uses Render's `1c-2g` compute plan (1 CPU, 2 GB RAM) to give the embedding model and its dependencies enough memory headroom. It stores SQLite, uploaded policies, and ChromaDB under `/var/data`, so those files survive deploys and restarts. Render currently lists this compute plan at about $40/month; a 1 GB persistent disk adds about $0.25/month. Check [Render pricing](https://render.com/pricing) before creating the service. Free web services do not support persistent disks, so they are suitable only for a disposable preview of this app.
+To keep trying at no Render compute cost, first reduce the backend's memory use, then sync the updated `render.yaml` Blueprint. Render prompts for `INITIAL_ADMIN_USERNAME` and `INITIAL_ADMIN_PASSWORD`; it generates `SECRET_KEY`. `GEMINI_API_KEY` can be supplied for generated answers; without it, the app falls back to a relevant policy excerpt. Keep all secret values in Render, never in GitHub.
+
+Free service storage is temporary. SQLite accounts and conversations, uploaded policy files, and the ChromaDB index may be lost on a restart or redeploy. The bundled policy files can be indexed again. Free services can also spin down when idle. This setup is for a disposable demo, not production use.
 
 ### Frontend on Vercel
 
+After the backend deploys successfully, the frontend can be deployed as a Vite site on Vercel:
+
 1. Import the same GitHub repository into Vercel.
 2. Set the Root Directory to `frontend` and use the Vite defaults (`npm run build`, output directory `dist`).
-3. Add the environment variable `VITE_API_URL` with the Render API URL, including `https://`, then deploy.
-4. Copy the deployed frontend URL. In the Render API service's environment settings, set `CORS_ORIGINS` to that URL, for example `https://policypilot.vercel.app`. Include comma-separated local origins too if you still need local development.
+3. Add `VITE_API_URL` with the deployed Render API URL, including `https://`.
+4. Set the Render service's `CORS_ORIGINS` to the deployed frontend URL. Include comma-separated local origins only if needed for development.
 
-Vercel's Hobby plan is listed as free for personal projects; review [Vercel plans](https://vercel.com/docs/plans) for its current terms and limits. After changing environment variables, redeploy the affected service so the new values take effect.
+Review current [Render pricing](https://render.com/pricing) and [Vercel plans](https://vercel.com/docs/plans) before creating paid resources. A larger Render instance with persistent storage is the simpler route for keeping the current local embedding and database design, but it is not free.
 
 ### Before making it public
 
