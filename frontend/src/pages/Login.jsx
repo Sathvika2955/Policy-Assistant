@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { Mark } from "../components/Layout";
 import { useAuth } from "../auth";
 import { APP_NAME } from "../config";
+import Icon from "../components/Icon";
 
 const DEMOS = [
   { label: "Employee demo", username: "employee", password: "employee123" },
@@ -15,6 +16,7 @@ export default function Login() {
   const [form, setForm] = useState({ username: "", password: "", fullName: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
@@ -41,7 +43,11 @@ export default function Login() {
           <Mark />
           {APP_NAME}
         </div>
-        <h1>Ask about company policy. See exactly where the answer comes from.</h1>
+        <div className="login-copy">
+          <span className="login-kicker"><Icon name="sparkle" size={16} />YOUR POLICY COPILOT</span>
+          <h1>Ask about company policy. See exactly where the answer comes from.</h1>
+          <p>Clear answers, grounded in your organization’s own documents.</p>
+        </div>
         <div className="sample" aria-hidden="true">
           <p className="sample-q">How many sick days do I get?</p>
           <p className="sample-a">
@@ -59,12 +65,12 @@ export default function Login() {
           {mode === "register" && (
             <label>
               Full name
-              <input value={form.fullName} onChange={set("fullName")} required maxLength={80} autoComplete="name" />
+              <span className="input-wrap"><Icon name="user" size={18} /><input value={form.fullName} onChange={set("fullName")} required maxLength={80} autoComplete="name" /></span>
             </label>
           )}
           <label>
             Username
-            <input
+            <span className="input-wrap"><Icon name="user" size={18} /><input
               value={form.username}
               onChange={set("username")}
               required
@@ -73,19 +79,19 @@ export default function Login() {
               pattern="[A-Za-z0-9_.\-]+"
               title="Letters, numbers, dots, dashes and underscores"
               autoComplete="username"
-            />
+            /></span>
           </label>
           <label>
             Password
-            <input
-              type="password"
+            <span className="input-wrap password-wrap"><Icon name="lock" size={18} /><input
+              type={passwordVisible ? "text" : "password"}
               value={form.password}
               onChange={set("password")}
               required
               minLength={mode === "register" ? 6 : 1}
               maxLength={72}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-            />
+            /><button className="reveal-password" type="button" onClick={() => setPasswordVisible((visible) => !visible)} aria-label={passwordVisible ? "Hide password" : "Show password"} title={passwordVisible ? "Hide password" : "Show password"}><Icon name={passwordVisible ? "eyeOff" : "eye"} size={18} /></button></span>
           </label>
 
           {error && <p className="error" role="alert">{error}</p>}
@@ -102,7 +108,7 @@ export default function Login() {
           </p>
         </form>
 
-        {mode === "login" && (
+        {mode === "login" && import.meta.env.DEV && (
           <div className="demos">
             <p>Just looking around? Fill in a demo account.</p>
             <div>

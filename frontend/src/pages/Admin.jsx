@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
+import Icon from "../components/Icon";
 
 export default function Admin() {
   const [docs, setDocs] = useState(null);
@@ -9,6 +10,8 @@ export default function Admin() {
   const [preview, setPreview] = useState(null);
   const [previewError, setPreviewError] = useState("");
   const [opening, setOpening] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [dragging, setDragging] = useState(false);
   const fileRef = useRef(null);
 
   const load = () => api.documents().then((r) => setDocs(r.documents)).catch((e) => setError(e.message));
@@ -18,7 +21,7 @@ export default function Admin() {
 
   async function upload(e) {
     e.preventDefault();
-    const file = fileRef.current.files[0];
+    const file = selectedFile;
     if (!file) {
       setError("Choose a PDF, DOCX or TXT file first.");
       return;
@@ -30,12 +33,37 @@ export default function Admin() {
       const r = await api.uploadDocument(file);
       setNotice(`Uploaded ${r.filename}. It is split into ${r.chunks} passages and ready to use.`);
       fileRef.current.value = "";
+      setSelectedFile(null);
       await load();
     } catch (err) {
       setError(err.message);
     } finally {
       setUploading(false);
     }
+  }
+
+  function chooseFile(file) {
+    if (!file) return;
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (!["pdf", "docx", "txt"].includes(extension)) {
+      setError("Choose a PDF, DOCX or TXT file.");
+      setSelectedFile(null);
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("The file must be 10 MB or smaller.");
+      setSelectedFile(null);
+      return;
+    }
+    setError("");
+    setNotice("");
+    setSelectedFile(file);
+  }
+
+  function onDrop(event) {
+    event.preventDefault();
+    setDragging(false);
+    chooseFile(event.dataTransfer.files?.[0]);
   }
 
   async function remove(name) {
@@ -72,9 +100,14 @@ export default function Admin() {
       </div>
 
       <form className="upload" onSubmit={upload}>
-        <label>Upload a policy (PDF, DOCX or TXT, up to 10 MB)<input ref={fileRef} type="file" accept=".pdf,.docx,.txt" /></label>
-        <button className="btn primary" disabled={uploading}>
-          {uploading ? "Indexing…" : "Upload policy"}
+        <input ref={fileRef} id="policy-upload" className="visually-hidden" type="file" accept=".pdf,.docx,.txt" onChange={(event) => chooseFile(event.target.files?.[0])} />
+        <label className={`dropzone ${dragging ? "dragging" : ""} ${selectedFile ? "has-file" : ""}`} htmlFor="policy-upload" onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}>
+          <span className="drop-icon"><Icon name="upload" size={23} /></span>
+          {selectedFile ? <><strong>{selectedFile.name}</strong><span className="muted">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB · Ready to upload</span></> : <><strong>Drop your policy file here</strong><span className="muted">or click to browse · PDF, DOCX or TXT · up to 10 MB</span></>}
+        </label>
+        {selectedFile && <button className="btn ghost" type="button" onClick={() => { setSelectedFile(null); fileRef.current.value = ""; }}>Remove file</button>}
+        <button className="btn primary" disabled={uploading || !selectedFile}>
+          {uploading ? "Indexing…" : <><Icon name="upload" />Upload policy</>}
         </button>
       </form>
 
@@ -89,8 +122,8 @@ export default function Admin() {
         <ul className="doclist">
           {docs.map((name) => (
             <li key={name}>
-              <div className="policy-file"><span className="policy-file-icon" aria-hidden="true">DOC</span><div><strong>{name}</strong><span className="muted">Indexed and available to the assistant</span></div></div>
-              <div className="policy-actions"><button className="btn ghost" onClick={() => openDocument(name)} disabled={opening === name}>{opening === name ? "Opening…" : "Open"}</button><button className="btn ghost danger" onClick={() => remove(name)}>Delete</button></div>
+              <div className="policy-file"><span className="policy-file-icon" aria-hidden="true"><Icon name="document" size={21} /></span><div><strong>{name}</strong><span className="muted">Indexed and available to the assistant</span></div></div>
+              <div className="policy-actions"><button className="btn ghost" onClick={() => openDocument(name)} disabled={opening === name}>{opening === name ? "Opening…" : <><Icon name="open" />Open</>}</button><button className="btn ghost danger" onClick={() => remove(name)}><Icon name="trash" />Delete</button></div>
             </li>
           ))}
         </ul>

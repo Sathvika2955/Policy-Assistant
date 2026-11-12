@@ -9,8 +9,11 @@ PolicyPilot is a web app that helps employees find answers in company policy doc
 - Ask for an overview of all policies currently in the library.
 - Check your own seeded leave balance and expense claim status through the assistant.
 - Keep separate employee and administrator experiences.
-- Upload, preview, replace, and delete PDF, DOCX, and TXT policy files as an administrator.
+- Upload policy files by dragging them onto the admin library or browsing for them. PDF, DOCX, and TXT files up to 10 MB are supported.
+- Preview, replace, and delete policy files as an administrator.
 - Save conversations and return to them later.
+- Copy assistant answers and mark them as helpful or not helpful. Feedback is currently a visual, session-only interaction and is not saved to the database.
+- Show or hide the password on the sign-in and account-creation form.
 - Fall back to the closest policy passage if Gemini is unavailable or no API key is configured.
 
 ## How it works
@@ -39,9 +42,17 @@ flowchart LR
 | Role | What they can do |
 |---|---|
 | Employee | Ask policy questions, view cited sources, manage their own conversations, and ask about their own demo leave and expense data. |
-| Admin | Use the admin overview, ask the assistant, and upload, open, replace, or delete policy files. |
+| Admin | Use the admin overview, ask the assistant, and drag-and-drop or browse to upload, open, replace, or delete policy files. |
 
 Self-registration creates an employee account. The admin demo account is seeded locally when the database is first created; admin accounts are not created through public registration.
+
+## Using the interface
+
+- **Sign in or register:** Employees can create an account from the login page. Registration creates an employee account; use the seeded admin demo account to open the admin workspace locally.
+- **Ask a policy question:** Employees can choose a suggested question or type their own. Previous conversations appear in the chat sidebar.
+- **Check the evidence:** Select a source under an answer to expand its matching passage. Use the copy button to copy an answer. The thumbs-up and thumbs-down buttons show a local selection but do not currently submit or store feedback.
+- **Manage policy files:** Admins can open the policy library and drop a PDF, DOCX, or TXT file onto the upload area, or click it to browse. The interface checks the 10 MB limit before uploading and indexing. Admins can also preview, replace, or remove files.
+- **Try the assistant as an admin:** Admins can open the employee-facing assistant to review answers and citations.
 
 ## Technology
 
@@ -79,7 +90,7 @@ policy-assistant/
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/pages/           # Login, employee chat, admin overview, policy library
-│   ├── src/components/      # Shared page layout and navigation
+│   ├── src/components/      # Shared page layout, navigation, and icons
 │   ├── src/api.js           # Frontend requests to FastAPI
 │   ├── src/auth.jsx         # Login session state
 │   ├── src/config.js        # App name and API URL
@@ -132,6 +143,36 @@ npm run dev
 Open `http://localhost:5173`. The frontend's default API URL is `http://127.0.0.1:8000`; set `VITE_API_URL` in `frontend/.env` if your backend runs elsewhere.
 
 On first startup, the backend creates the local SQLite tables and indexes the bundled policy files if the vector index is empty. The first embedding-model load may take a little time.
+
+## Deploy to Render and Vercel
+
+The repository includes `render.yaml` for the FastAPI backend. The frontend can be deployed as a Vite site on Vercel using the included `frontend/vercel.json` rewrite for React Router.
+
+### Backend on Render
+
+1. Push the project to GitHub and connect the repository to Render.
+2. Create a new Blueprint and select this repository. Render reads `render.yaml` and creates the API service with a persistent disk mounted at `/var/data`.
+3. When prompted, set a private `INITIAL_ADMIN_USERNAME` and `INITIAL_ADMIN_PASSWORD`, and optionally a `GEMINI_API_KEY`. The blueprint disables the public demo accounts and generates a JWT secret. Keep all secrets in Render, never in the repository.
+4. Wait for the service to deploy, then note its URL, for example `https://policypilot-api.onrender.com`.
+
+The service uses Render's `1c-2g` compute plan (1 CPU, 2 GB RAM) to give the embedding model and its dependencies enough memory headroom. It stores SQLite, uploaded policies, and ChromaDB under `/var/data`, so those files survive deploys and restarts. Render currently lists this compute plan at about $40/month; a 1 GB persistent disk adds about $0.25/month. Check [Render pricing](https://render.com/pricing) before creating the service. Free web services do not support persistent disks, so they are suitable only for a disposable preview of this app.
+
+### Frontend on Vercel
+
+1. Import the same GitHub repository into Vercel.
+2. Set the Root Directory to `frontend` and use the Vite defaults (`npm run build`, output directory `dist`).
+3. Add the environment variable `VITE_API_URL` with the Render API URL, including `https://`, then deploy.
+4. Copy the deployed frontend URL. In the Render API service's environment settings, set `CORS_ORIGINS` to that URL, for example `https://policypilot.vercel.app`. Include comma-separated local origins too if you still need local development.
+
+Vercel's Hobby plan is listed as free for personal projects; review [Vercel plans](https://vercel.com/docs/plans) for its current terms and limits. After changing environment variables, redeploy the affected service so the new values take effect.
+
+### Before making it public
+
+- Replace the sample `ACME Corp` policies with approved company policy content.
+- The Render configuration disables seeded demo accounts and creates an initial admin from private environment variables. Do not reuse demo credentials for a public deployment.
+- Keep `GEMINI_API_KEY` in Render's secret environment variables; never put it in frontend code or GitHub.
+- Set `CORS_ORIGINS` to the exact deployed frontend origin.
+- Review the service URL and hosting costs before confirming the deployment.
 
 ## Demo accounts
 

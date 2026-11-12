@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { api } from "../api";
+import Icon from "../components/Icon";
 
 const EXAMPLES = [
   "How many days of annual leave do I get?",
@@ -18,6 +19,7 @@ function Sources({ sources }) {
         {sources.map((s, i) => (
           <li key={`${s.source}-${s.page}-${i}`}>
             <button className="doc" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)}>
+              <Icon name="document" size={16} />
               <span className="doc-name">{s.source}</span>
               {s.page > 0 && <span className="doc-page">page {s.page}</span>}
             </button>
@@ -29,7 +31,7 @@ function Sources({ sources }) {
   );
 }
 
-function Message({ m }) {
+function Message({ m, feedback, copied, onFeedback, onCopy }) {
   if (m.role === "user") {
     return (
       <div className="msg user">
@@ -43,6 +45,13 @@ function Message({ m }) {
         <ReactMarkdown>{m.content}</ReactMarkdown>
       </div>
       {m.sources?.length > 0 && <Sources sources={m.sources} />}
+      <div className="answer-actions" aria-label="Answer actions">
+        <button className={`icon-action ${feedback === "up" ? "selected" : ""}`} type="button" title="Helpful" aria-label="This answer was helpful" aria-pressed={feedback === "up"} onClick={() => onFeedback(feedback === "up" ? null : "up")}><Icon name="thumbUp" size={17} /></button>
+        <button className={`icon-action ${feedback === "down" ? "selected" : ""}`} type="button" title="Not helpful" aria-label="This answer was not helpful" aria-pressed={feedback === "down"} onClick={() => onFeedback(feedback === "down" ? null : "down")}><Icon name="thumbDown" size={17} /></button>
+        <button className="icon-action" type="button" title={copied ? "Copied" : "Copy answer"} aria-label={copied ? "Answer copied" : "Copy answer"} onClick={onCopy}><Icon name="copy" size={17} /></button>
+        {copied && <span className="copy-status" role="status">Copied</span>}
+        {feedback && <span className="copy-status" role="status">Thanks for your feedback</span>}
+      </div>
     </div>
   );
 }
@@ -55,6 +64,8 @@ export default function Chat() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [answerFeedback, setAnswerFeedback] = useState({});
+  const [copiedKey, setCopiedKey] = useState("");
   const activeRef = useRef(null); // always the current conversation, even inside async code
   const endRef = useRef(null);
 
@@ -87,7 +98,23 @@ export default function Chat() {
     setActive(null);
     setMessages([]);
     setError("");
+    setAnswerFeedback({});
+    setCopiedKey("");
     setSidebarOpen(false);
+  }
+
+  function messageKey(index) {
+    return `${activeId ?? "draft"}:${index}`;
+  }
+
+  async function copyAnswer(text, key) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      window.setTimeout(() => setCopiedKey((current) => current === key ? "" : current), 1800);
+    } catch {
+      setError("Clipboard access is unavailable in this browser.");
+    }
   }
 
   async function removeConversation(id) {
@@ -135,7 +162,7 @@ export default function Chat() {
   return (
     <div className="chat">
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Conversations">
-        <button className="btn primary wide" onClick={newChat}>New chat</button>
+        <button className="btn primary wide" onClick={newChat}><Icon name="plus" />New chat</button>
         {conversations.length === 0 ? (
           <p className="muted pad">Your conversations will appear here.</p>
         ) : (
@@ -170,7 +197,10 @@ export default function Chat() {
                 </ul>
               </div>
             ) : (
-              messages.map((m, i) => <Message key={i} m={m} />)
+              messages.map((m, i) => {
+                const key = messageKey(i);
+                return <Message key={i} m={m} feedback={answerFeedback[key]} copied={copiedKey === key} onFeedback={(value) => setAnswerFeedback((current) => ({ ...current, [key]: value }))} onCopy={() => copyAnswer(m.content, key)} />;
+              })
             )}
             {sending && (
               <div className="msg bot thinking" role="status">

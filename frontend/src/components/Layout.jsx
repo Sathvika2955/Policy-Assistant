@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth";
 import { APP_NAME } from "../config";
+import Icon from "./Icon";
 
 export function Mark() {
   return (
@@ -23,12 +24,12 @@ export default function Layout() {
         <nav>
           {user.role === "admin" ? (
             <>
-              <NavLink to="/" end>Overview</NavLink>
-              <NavLink to="/admin/policies">Policy library</NavLink>
-              <NavLink to="/assistant">Ask assistant</NavLink>
+              <NavLink to="/" end><Icon name="overview" />Overview</NavLink>
+              <NavLink to="/admin/policies"><Icon name="library" />Policy library</NavLink>
+              <NavLink to="/assistant"><Icon name="chat" />Ask assistant</NavLink>
             </>
           ) : (
-            <NavLink to="/" end>Policy assistant</NavLink>
+            <NavLink to="/" end><Icon name="chat" />Policy assistant</NavLink>
           )}
         </nav>
         <div className="who">
