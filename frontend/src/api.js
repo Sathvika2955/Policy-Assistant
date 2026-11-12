@@ -61,6 +61,7 @@ export const api = {
   deleteConversation: (id) => request(`/conversations/${id}`, { method: "DELETE" }),
 
   documents: () => request("/documents"),
+  document: (name) => request(`/documents/${encodeURIComponent(name)}`),
   uploadDocument: (file) => {
     const form = new FormData();
     form.append("file", file);

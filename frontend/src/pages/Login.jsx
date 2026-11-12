@@ -48,9 +48,7 @@ export default function Login() {
             10 paid days a year. You need a medical certificate if you are off for more than 2
             days in a row.
           </p>
-          <span className="doc static">
-            <span className="doc-name">leave_policy.txt</span>
-          </span>
+          <span className="sample-caption">Example of a policy answer</span>
         </div>
       </section>
 

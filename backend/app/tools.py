@@ -6,8 +6,9 @@ so it is written for the model, not for humans.
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from app import retrieval
+from app import config, retrieval
 from app.database import connect
+from app.ingestion import load_pages
 
 
 @tool(response_format="content_and_artifact")
@@ -24,6 +25,43 @@ def search_policies(query: str) -> tuple[str, list[dict]]:
         parts.append(f"[Source: {where}]\n{h['text']}")
     # content -> what the LLM reads;  artifact -> structured data we use for citations
     return "\n\n".join(parts), hits
+
+
+@tool(response_format="content_and_artifact")
+def list_policies() -> tuple[str, list[dict]]:
+    """Use when the user asks what company policies exist, asks to see all policies,
+    or requests a list or overview of the policy library. Return the available policy
+    documents and their text so the answer can summarize every one, not just search hits."""
+    names = retrieval.list_documents()
+    if not names:
+        return "No policy documents are available.", []
+
+    sections = []
+    artifacts = []
+    for name in names:
+        path = config.POLICY_DIR / name
+        try:
+            pages = load_pages(path)
+        except Exception:
+            continue
+        file_text = []
+        for page in pages:
+            text = page["text"].strip()
+            if not text:
+                continue
+            file_text.append(text)
+            artifacts.append({
+                "text": text,
+                "source": name,
+                "page": page["page"],
+                "score": 1.0,
+            })
+        if file_text:
+            sections.append(f"[Source: {name}]\n" + "\n\n".join(file_text))
+
+    if not sections:
+        return "The policy library has no readable policy text.", []
+    return "\n\n".join(sections), artifacts
 
 
 @tool
@@ -68,4 +106,4 @@ def get_expense_status(config: RunnableConfig) -> str:
     )
 
 
-ALL_TOOLS = [search_policies, get_leave_balance, get_expense_status]
+ALL_TOOLS = [search_policies, list_policies, get_leave_balance, get_expense_status]

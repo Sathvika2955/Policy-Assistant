@@ -21,8 +21,15 @@ export default function Layout() {
           {APP_NAME}
         </NavLink>
         <nav>
-          <NavLink to="/" end>Chat</NavLink>
-          {user.role === "admin" && <NavLink to="/admin">Policies</NavLink>}
+          {user.role === "admin" ? (
+            <>
+              <NavLink to="/" end>Overview</NavLink>
+              <NavLink to="/admin/policies">Policy library</NavLink>
+              <NavLink to="/assistant">Ask assistant</NavLink>
+            </>
+          ) : (
+            <NavLink to="/" end>Policy assistant</NavLink>
+          )}
         </nav>
         <div className="who">
           <span className="who-name">{user.full_name}</span>

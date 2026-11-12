@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom
 import { AuthProvider, useAuth } from "./auth";
 import Layout from "./components/Layout";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 import Chat from "./pages/Chat";
 import Login from "./pages/Login";
 
@@ -24,9 +25,10 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<RequireAuth />}>
-            <Route index element={<Chat />} />
+            <Route index element={<Home />} />
+            <Route path="assistant" element={<Chat />} />
             <Route element={<RequireAdmin />}>
-              <Route path="admin" element={<Admin />} />
+              <Route path="admin/policies" element={<Admin />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -35,3 +37,9 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+function Home() {
+  const { user } = useAuth();
+  return user.role === "admin" ? <AdminDashboard /> : <Chat />;
+}
+

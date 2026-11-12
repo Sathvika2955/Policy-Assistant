@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from app import config, retrieval
 from app.deps import get_current_user, require_admin
+from app.ingestion import load_pages
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -12,6 +13,22 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 @router.get("")
 def list_documents(user: dict = Depends(get_current_user)):
     return {"documents": retrieval.list_documents()}
+
+
+@router.get("/{filename}")
+def read_document(filename: str, admin: dict = Depends(require_admin)):
+    """Return extracted document text for the admin preview dialog."""
+    safe_name = Path(filename).name
+    if safe_name != filename or safe_name not in retrieval.list_documents():
+        raise HTTPException(status_code=404, detail="Document not found")
+    path = config.POLICY_DIR / safe_name
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Document file is unavailable")
+    try:
+        pages = load_pages(path)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"Could not read this file: {exc}")
+    return {"filename": safe_name, "pages": pages}
 
 
 @router.post("", status_code=201)
