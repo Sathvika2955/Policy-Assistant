@@ -157,7 +157,6 @@ npm run dev
 
 **Development in Progress**
 
-This project is being developed for TCS Zeta Innovate.
 
 ---
 
